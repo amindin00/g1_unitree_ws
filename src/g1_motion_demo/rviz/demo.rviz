@@ -1,0 +1,54 @@
+Panels:
+  - Class: rviz_common/Displays
+    Name: Displays
+  - Class: rviz_common/Views
+    Name: Views
+Visualization Manager:
+  Class: ""
+  Displays:
+    - Class: rviz_default_plugins/Grid
+      Name: Grid
+      Enabled: true
+      Cell Size: 0.25
+      Plane Cell Count: 12
+      Offset:
+        X: 0
+        Y: 0
+        Z: -0.78
+      Alpha: 0.3
+    - Class: rviz_default_plugins/RobotModel
+      Name: G1
+      Enabled: true
+      Description Source: Topic
+      Description Topic:
+        Value: /g1_demo/robot_description
+        Durability Policy: Transient Local
+        Reliability Policy: Reliable
+        History Policy: Keep Last
+        Depth: 1
+      Alpha: 1
+      Visual Enabled: true
+      Collision Enabled: false
+  Global Options:
+    Fixed Frame: pelvis
+    Background Color: 35; 40; 49
+    Frame Rate: 30
+  Name: root
+  Tools:
+    - Class: rviz_default_plugins/Interact
+    - Class: rviz_default_plugins/MoveCamera
+  Value: true
+  Views:
+    Current:
+      Class: rviz_default_plugins/Orbit
+      Distance: 2.6
+      Focal Point:
+        X: 0
+        Y: 0
+        Z: -0.1
+      Name: Current View
+      Pitch: 0.15
+      Yaw: 0.15
+Window Geometry:
+  Height: 850
+  Width: 1200

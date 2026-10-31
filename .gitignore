@@ -1,0 +1,12 @@
+build/
+install/
+log/
+.venv/
+models/
+recordings/
+__pycache__/
+.pytest_cache/
+*.egg-info/
+
+# VS Code IntelliSense database and temporary files
+.vscode/browse.vc.db*
