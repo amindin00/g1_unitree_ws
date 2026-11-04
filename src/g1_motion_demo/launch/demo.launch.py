@@ -20,7 +20,8 @@ def generate_launch_description():
     demo = Path(get_package_share_directory('g1_motion_demo'))
     urdf = description / 'urdf/g1_29dof.urdf'
     arguments = [
-        DeclareLaunchArgument('mode', default_value='wave', choices=['wave', 'webcam', 'replay']),
+        DeclareLaunchArgument('mode', default_value='wave',
+                             choices=['wave', 'dance', 'webcam', 'replay']),
         DeclareLaunchArgument('rviz', default_value='true'),
         DeclareLaunchArgument('python_executable', default_value=sys.executable),
         DeclareLaunchArgument('rate', default_value='30.0'),

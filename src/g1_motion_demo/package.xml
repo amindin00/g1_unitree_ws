@@ -2,7 +2,7 @@
 <package format="3">
   <name>g1_motion_demo</name>
   <version>0.1.0</version>
-  <description>RViz waving, webcam arm mirroring, and motion recording for the G1.</description>
+  <description>RViz waving, dancing, webcam arm mirroring, and motion recording for the G1.</description>
   <maintainer email="amadeus@example.com">Amadeus</maintainer>
   <license>Apache-2.0</license>
   <buildtool_depend>ament_python</buildtool_depend>

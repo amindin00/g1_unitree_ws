@@ -1,8 +1,8 @@
 # Unitree G1 motion playground
 
 A ROS 2 Jazzy workspace for animating the Unitree G1 29-DOF model in RViz.
-The demo can wave, mirror your arms using an Astra Pro camera, and record or
-replay joint motion.
+The demo can wave, perform a predefined dance without a camera, mirror your
+arms using an Astra Pro camera, and record or replay joint motion.
 
 This is kinematic visualization. The pelvis stays fixed, the legs stay still
 in webcam mode, and there is no balance or contact controller. The demo publishes
@@ -99,7 +99,7 @@ ranges, so a later setup may resolve different compatible versions.
 
 Always pass `python_executable` when using webcam mode. Activating a virtual
 environment alone does not change the installed ROS executable's interpreter.
-Wave and replay modes do not require MediaPipe or a camera.
+Wave, dance, and replay modes do not require MediaPipe or a camera.
 
 ## Finding the Astra camera
 
@@ -155,6 +155,27 @@ ros2 launch g1_motion_demo demo.launch.py
 The right hand waves in a smooth seven-second loop. Add `speed:=0.5` to slow the
 animation to half speed.
 
+### Predefined dance (no camera)
+
+```bash
+ros2 launch g1_motion_demo demo.launch.py mode:=dance
+```
+
+The 30-second Michael Jackson-inspired routine loops automatically: hat-tip
+gestures, diagonal arm points, shoulder hits, alternating heel-toe slides, and a
+finishing waist lean. Poses include brief holds and eased transitions. No camera,
+video, MediaPipe, music file, or recording is needed.
+Add `speed:=0.5` for half speed, or `speed:=1.25` for a faster routine. The
+existing smoothing and joint-speed limits apply. Close RViz or press Ctrl+C to
+stop; `loop` only controls replay mode.
+
+This is animation with a fixed pelvis: the moonwalk-style section stays in place,
+and the feet can lift or slide relative to the grid. It does not provide balance
+or foot-contact control for a physical G1. The hand gestures use the existing
+rigid hands; no hat or finger animation is added. The predefined poses and their
+timing are in `_dance_keyframes()`, sampled by `dance_pose()`, in
+[`motion.py`](src/g1_motion_demo/g1_motion_demo/motion.py).
+
 ### Webcam mirror
 
 Use the Astra command in the quick start, or select another `/dev/videoN`
@@ -180,7 +201,7 @@ For execution without windows, add `rviz:=false`; for webcam/video mode also add
 
 ## Recording and replay
 
-Add `record_path` to wave or webcam mode. To record a webcam routine:
+Add `record_path` to wave, dance, or webcam mode. To record a webcam routine:
 
 ```bash
 ros2 launch g1_motion_demo demo.launch.py mode:=webcam camera:=48 \
@@ -239,7 +260,7 @@ The demo uses the `/g1_demo` namespace and remaps its TF topics. RViz uses
 
 | Argument | Default | Meaning |
 | --- | --- | --- |
-| `mode` | `wave` | `wave`, `webcam`, or `replay` |
+| `mode` | `wave` | `wave`, `dance`, `webcam`, or `replay` |
 | `camera` | `0` | Camera index; use `48` for the Astra as tested |
 | `python_executable` | Launch interpreter | Use `$PWD/.venv/bin/python3` for webcam mode |
 | `model_path` | Empty | Path to the MediaPipe `.task` model; required in webcam mode |
@@ -249,7 +270,7 @@ The demo uses the `/g1_demo` namespace and remaps its TF topics. RViz uses
 | `rate` | `30.0` | Requested update rate in Hz, up to 120; inference can lower it |
 | `smoothing` | `0.10` | Smoothing time constant in seconds; zero disables smoothing |
 | `max_joint_speed` | `2.5` | Joint speed cap in rad/s, also bounded by the URDF |
-| `speed` | `1.0` | Positive wave/replay timeline multiplier; does not change webcam speed |
+| `speed` | `1.0` | Positive wave/dance/replay timeline multiplier; does not change webcam speed |
 | `loop` | `true` | Loop replay; false holds the final pose |
 | `record_path` | Empty | New output JSONL file; parent directories are created |
 | `replay_path` | Empty | Input JSONL recording; required for replay |

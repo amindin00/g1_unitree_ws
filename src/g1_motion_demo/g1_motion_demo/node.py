@@ -1,4 +1,4 @@
-"""Publish a wave, a webcam pose, or a recording as ROS joint states."""
+"""Publish a wave, dance, webcam pose, or recording as ROS joint states."""
 
 import math
 import signal
@@ -10,7 +10,7 @@ from rclpy.executors import ExternalShutdownException
 from rclpy.node import Node
 from sensor_msgs.msg import JointState
 
-from .motion import PoseFilter, RobotModel, wave_pose
+from .motion import PoseFilter, RobotModel, dance_pose, wave_pose
 from .recording import Playback, Recorder
 
 
@@ -38,8 +38,8 @@ class MotionDemo(Node):
             self.declare_parameter(name, value)
         settings = {name: self.get_parameter(name).value for name in defaults}
         self.mode = settings['mode']
-        if self.mode not in ('wave', 'webcam', 'replay'):
-            raise ValueError('mode must be wave, webcam, or replay')
+        if self.mode not in ('wave', 'dance', 'webcam', 'replay'):
+            raise ValueError('mode must be wave, dance, webcam, or replay')
         for name in ('rate', 'speed', 'max_joint_speed'):
             if not math.isfinite(settings[name]) or settings[name] <= 0:
                 raise ValueError(f'{name} must be a positive finite number')
@@ -81,6 +81,8 @@ class MotionDemo(Node):
         elapsed = now - self.started
         if self.mode == 'wave':
             target = wave_pose(elapsed * self.speed)
+        elif self.mode == 'dance':
+            target = dance_pose(elapsed * self.speed)
         elif self.playback:
             target = self.playback.sample(elapsed * self.speed, self.loop)
         pose = self.filter.update(target, now - self.previous_time)

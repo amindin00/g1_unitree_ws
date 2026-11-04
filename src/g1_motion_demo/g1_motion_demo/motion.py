@@ -138,6 +138,146 @@ def wave_pose(seconds):
     }
 
 
+def _dance_keyframes():
+    """Build a Michael Jackson-inspired routine using named, editable poses."""
+    neutral = wave_pose(0.0)
+    ready = {
+        **neutral,
+        'left_shoulder_roll_joint': 0.20,
+        'right_shoulder_roll_joint': -0.20,
+        'left_elbow_joint': 1.15,
+        'right_elbow_joint': 1.15,
+        'left_hip_roll_joint': 0.06,
+        'right_hip_roll_joint': -0.06,
+        'left_hip_pitch_joint': -0.10,
+        'right_hip_pitch_joint': -0.10,
+        'left_knee_joint': 0.20,
+        'right_knee_joint': 0.20,
+        'left_ankle_pitch_joint': -0.10,
+        'right_ankle_pitch_joint': -0.10,
+        'left_ankle_roll_joint': -0.06,
+        'right_ankle_roll_joint': 0.06,
+    }
+    hat_tip = {
+        **ready,
+        'right_shoulder_pitch_joint': -1.50,
+        'right_shoulder_roll_joint': -0.30,
+        'right_elbow_joint': -0.40,
+        'right_wrist_roll_joint': -0.25,
+        'left_shoulder_pitch_joint': 0.15,
+        'left_shoulder_yaw_joint': -0.30,
+        'left_elbow_joint': 0.65,
+        'waist_pitch_joint': 0.10,
+        'waist_yaw_joint': -0.12,
+    }
+    point_right = {
+        **ready,
+        'right_shoulder_pitch_joint': -2.10,
+        'right_shoulder_roll_joint': -0.65,
+        'right_shoulder_yaw_joint': -0.15,
+        'right_elbow_joint': 1.30,
+        'left_shoulder_pitch_joint': 0.15,
+        'left_elbow_joint': 0.65,
+        'waist_yaw_joint': -0.22,
+        'waist_roll_joint': 0.12,
+    }
+    shoulder_hit = {
+        **ready,
+        'left_shoulder_pitch_joint': -0.35,
+        'left_shoulder_roll_joint': 0.95,
+        'left_shoulder_yaw_joint': -0.35,
+        'left_elbow_joint': 0.25,
+        'right_shoulder_pitch_joint': -0.25,
+        'right_shoulder_roll_joint': -0.55,
+        'right_elbow_joint': 0.10,
+        'waist_yaw_joint': 0.28,
+        'waist_roll_joint': -0.12,
+        'waist_pitch_joint': -0.08,
+    }
+    slide_left = {
+        **hat_tip,
+        # The straight leg slides back while the bent leg points its toe down.
+        # This suggests a moonwalk in place; it does not solve floor contact.
+        'left_hip_pitch_joint': 0.25,
+        'left_knee_joint': 0.12,
+        'left_ankle_pitch_joint': -0.37,
+        'right_hip_pitch_joint': -0.25,
+        'right_knee_joint': 0.45,
+        'right_ankle_pitch_joint': 0.30,
+        'waist_yaw_joint': 0.06,
+        'waist_roll_joint': -0.06,
+    }
+    slide_right = {
+        **slide_left,
+        'left_hip_pitch_joint': -0.25,
+        'left_knee_joint': 0.45,
+        'left_ankle_pitch_joint': 0.30,
+        'right_hip_pitch_joint': 0.25,
+        'right_knee_joint': 0.12,
+        'right_ankle_pitch_joint': -0.37,
+        'waist_yaw_joint': -0.06,
+        'waist_roll_joint': 0.06,
+    }
+    lean = {
+        **ready,
+        'waist_pitch_joint': 0.38,
+        'left_shoulder_pitch_joint': 0.20,
+        'right_shoulder_pitch_joint': 0.20,
+        'left_elbow_joint': 1.35,
+        'right_elbow_joint': 1.35,
+    }
+
+    def mirror(pose):
+        reflected = {}
+        for name, angle in pose.items():
+            if name.startswith('left_'):
+                name = 'right_' + name[5:]
+            elif name.startswith('right_'):
+                name = 'left_' + name[6:]
+            if '_roll_' in name or '_yaw_' in name:
+                angle = -angle
+            reflected[name] = angle
+        return reflected
+
+    point_left, opposite_hit = mirror(point_right), mirror(shoulder_hit)
+    frames = (
+        (0.0, neutral), (1.0, ready),
+        (2.2, hat_tip), (3.0, hat_tip),
+        (4.4, point_right), (5.2, point_right),
+        (6.4, hat_tip), (7.8, point_left), (8.6, point_left),
+        (9.8, shoulder_hit), (10.6, opposite_hit),
+        (11.4, shoulder_hit), (12.2, opposite_hit), (13.0, ready),
+        (14.0, slide_left), (15.2, slide_right),
+        (16.4, slide_left), (17.6, slide_right),
+        (18.8, slide_left), (20.0, slide_right), (21.0, ready),
+        (22.4, lean), (23.2, lean),
+        (24.6, point_right), (25.4, point_right),
+        (26.8, hat_tip), (27.6, hat_tip), (28.8, ready), (30.0, neutral),
+    )
+    # Fill omitted joints with neutral, so transitions release previous gestures.
+    names = dict.fromkeys(name for _, pose in frames for name in pose)
+    baseline = {name: neutral.get(name, 0.0) for name in names}
+    return tuple((seconds, {**baseline, **pose}) for seconds, pose in frames)
+
+
+_DANCE_KEYFRAMES = _dance_keyframes()
+
+
+def dance_pose(seconds):
+    """Loop a 30-second MJ-inspired RViz routine with eased pose transitions.
+
+    Hat tips, diagonal points, shoulder hits, heel-toe slides, and a waist lean.
+    The pelvis is fixed: there is no root travel, balance, or foot-contact solve.
+    """
+    phase = seconds % _DANCE_KEYFRAMES[-1][0]
+    for (start, before), (end, after) in zip(_DANCE_KEYFRAMES, _DANCE_KEYFRAMES[1:]):
+        if phase < end:
+            alpha = (phase - start) / (end - start)
+            alpha = alpha * alpha * (3.0 - 2.0 * alpha)
+            return {name: value + alpha * (after[name] - value)
+                    for name, value in before.items()}
+
+
 class PoseFilter:
     """Apply exponential smoothing and a bounded joint speed."""
 
